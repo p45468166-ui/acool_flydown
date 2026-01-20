@@ -1,0 +1,42 @@
+name: Build Tkinter App (macOS)
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build deps
+        run: |
+          python -m pip install -U pip wheel setuptools
+          python -m pip install -U pyinstaller
+          python -m pip install -r requirements.txt
+
+      - name: Build
+        run: |
+          pyinstaller --clean --noconfirm tkinter_app.spec
+
+      - name: Pack artifact
+        run: |
+          cd dist
+          zip -r "hongguo_downloader_macos.zip" *
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hongguo_downloader_macos
+          path: dist/hongguo_downloader_macos.zip
